@@ -14,13 +14,13 @@ find_package(object_recognition_core REQUIRED)
 #set_ecto_install_package_name()
 
 add_subdirectory(src)
-add_subdirectory(web_ui)
 
 install(DIRECTORY apps/
         DESTINATION bin
         USE_SOURCE_PERMISSIONS
         PATTERN "*.bag" EXCLUDE
         PATTERN "*.pyc" EXCLUDE
+        PATTERN "roscompat*" EXCLUDE
 )
 
 # add tests
