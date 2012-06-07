@@ -8,6 +8,6 @@ Standards-Version: 3.9.2
 
 Package: ros-fuerte-object-recognition-reconstruction
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ros-fuerte-ecto-pcl,ros-fuerte-object-recognition-core,ros-fuerte-opencv2,ros-fuerte-ecto,ros-fuerte-catkin,ros-fuerte-ecto-image-pipeline
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-fuerte-opencv2,ros-fuerte-ecto-image-pipeline,ros-fuerte-ecto-pcl,ros-fuerte-object-recognition-core,ros-fuerte-ecto
 Description: basic 3d reconstruction of an object from aligned Kinect data
 
