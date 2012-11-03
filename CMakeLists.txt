@@ -1,30 +1,24 @@
 cmake_minimum_required(VERSION 2.8)
 project(object_recognition_reconstruction)
 
-find_package(catkin)
-if (${catkin_VERSION} VERSION_GREATER "0.5.28")
-catkin_package()
+find_package(catkin REQUIRED ecto ecto_image_pipeline ecto_pcl object_recognition_core)
+find_package(PCL REQUIRED)
+
+if (ROS_GROOVY_OR_ABOVE_FOUND)
+catkin_package(DEPENDS ecto ecto_image_pipeline ecto_pcl object_recognition_core)
 else()
 catkin_stack()
-catkin_project(object_recognition_reconstruction)
+catkin_project(object_recognition_reconstruction DEPENDS ecto ecto_image_pipeline ecto_pcl object_recognition_core)
 endif()
 
-find_package(ecto REQUIRED)
-find_pcl_package()
+find_package(ecto_pcl)
+find_package(ecto_image_pipeline)
+find_package(object_recognition_core)
 
-find_package(object_recognition_core REQUIRED)
+include_directories(SYSTEM ${catkin_INCLUDE_DIRS} ${object_recognition_core_INCLUDE_DIRS} ${ecto_pcl_INCLUDE_DIRS} ${ecto_image_pipeline_INCLUDE_DIRS})
 
 add_subdirectory(src)
 
-if (ROS_ELECTRIC_FOUND)
-install(DIRECTORY apps/
-        DESTINATION bin
-        USE_SOURCE_PERMISSIONS
-        PATTERN "*.bag" EXCLUDE
-        PATTERN "*.pyc" EXCLUDE
-        PATTERN "roscompat*" EXCLUDE
-)
-endif()
 if (ROS_FUERTE_FOUND)
 # install the applications
 install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/mesh_object
@@ -44,4 +38,3 @@ if(BUILD_TEST)
   enable_testing()
   add_subdirectory(test)
 endif()
-
