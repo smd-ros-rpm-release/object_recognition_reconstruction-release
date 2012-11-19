@@ -1,6 +1,6 @@
 <stack>
   <name>object_recognition_reconstruction</name>
-  <version>0.2.12</version>
+  <version>0.2.13</version>
   <description>basic 3d reconstruction of an object from aligned Kinect data</description>
   <author email="erublee@willowgarage.com">Ethan Rublee</author>
   <author email="vrabaud@willowgarage.com">Vincent Rabaud</author>
@@ -15,6 +15,8 @@
   <build_depends>ecto_image_pipeline</build_depends>
   <build_depends>ecto_pcl</build_depends>
   <build_depends>glut</build_depends>
+  <build_depends>libxi-dev</build_depends>
+  <build_depends>libxmu-dev</build_depends>
   <build_depends>object_recognition_core</build_depends>
   <build_depends>opencv2</build_depends>
 
@@ -23,6 +25,8 @@
   <depends>ecto_image_pipeline</depends>
   <depends>ecto_pcl</depends>
   <depends>glut</depends>
+  <depends>libxi-dev</depends>
+  <depends>libxmu-dev</depends>
   <depends>object_recognition_core</depends>
   <depends>opencv2</depends>
 </stack>
