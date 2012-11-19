@@ -1,6 +1,6 @@
 <package>
   <name>object_recognition_reconstruction</name>
-  <version>0.2.14</version>
+  <version>0.2.15</version>
   <description>basic 3d reconstruction of an object from aligned Kinect data</description>
   <author email="erublee@willowgarage.com">Ethan Rublee</author>
   <author email="vrabaud@willowgarage.com">Vincent Rabaud</author>
@@ -13,6 +13,7 @@
   <build_depend>ecto</build_depend>
   <build_depend>ecto_image_pipeline</build_depend>
   <build_depend>ecto_pcl</build_depend>
+  <build_depend>freeimage</build_depend>
   <build_depend>glut</build_depend>
   <build_depend>libdevil-dev</build_depend>
   <build_depend>libxi-dev</build_depend>
@@ -25,6 +26,7 @@
   <run_depend>ecto</run_depend>
   <run_depend>ecto_image_pipeline</run_depend>
   <run_depend>ecto_pcl</run_depend>
+  <run_depend>freeimage</run_depend>
   <run_depend>glut</run_depend>
   <run_depend>libdevil-dev</run_depend>
   <run_depend>libxi-dev</run_depend>
