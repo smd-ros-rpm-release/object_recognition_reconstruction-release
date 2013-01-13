@@ -1,0 +1,12 @@
+Source: ros-fuerte-object-recognition-reconstruction
+Section: misc
+Priority: extra
+Maintainer: Vincent Rabaud <vrabaud@willowgarage.com>
+Build-Depends: debhelper (>= 7.0.50~), ros-fuerte-catkin,ros-fuerte-opencv-candidate,ros-fuerte-ecto-pcl,libfreeimage-dev,freeglut3-dev,libdevil-dev,ros-fuerte-opencv2,assimp-dev,libxi-dev,libsdl1.2-dev,ros-fuerte-ecto,ros-fuerte-ecto-image-pipeline,ros-fuerte-object-recognition-core,libxmu-dev
+Homepage: http://ecto.willowgarage.com/recognition
+Standards-Version: 3.9.2
+
+Package: ros-fuerte-object-recognition-reconstruction
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-fuerte-opencv-candidate,ros-fuerte-ecto-pcl,libfreeimage-dev,freeglut3-dev,libdevil-dev,ros-fuerte-opencv2,assimp-dev,libxi-dev,libsdl1.2-dev,ros-fuerte-ecto,ros-fuerte-ecto-image-pipeline,ros-fuerte-object-recognition-core,libxmu-dev
+Description: basic 3d reconstruction of an object from aligned Kinect data
