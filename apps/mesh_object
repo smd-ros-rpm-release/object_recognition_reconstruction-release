@@ -1,22 +1,21 @@
 #!/usr/bin/env python
-import sys
-import argparse
-import os
-
-import couchdb
-
-import ecto
-from ecto_opencv import calib, highgui, imgproc
-import object_recognition_core
-from object_recognition_core.db import tools as dbtools, models
 from ecto_image_pipeline.base import RescaledRegisteredDepth
+from ecto_opencv import calib, highgui, imgproc
+from object_recognition_core.db import Documents, ObjectDb, tools as dbtools, models
+from object_recognition_core.db.cells import ObservationReader
+from object_recognition_reconstruction import PointCloudTransform, PointCloudAccumulator
+from tempfile import NamedTemporaryFile
+import argparse
+import couchdb
+import ecto
 import ecto_image_pipeline.base
 import ecto_image_pipeline.conversion
-import object_recognition_reconstruction
 import ecto_pcl
-from tempfile import NamedTemporaryFile
-from object_recognition_core.db import Documents, ObjectDb
-from object_recognition_core.db.cells import ObservationReader
+import object_recognition_core
+import os
+import shutil
+import sys
+import tempfile
 
 cloud_view = ecto_pcl.CloudViewer("Cloud Display", window_name="PCD Viewer")[:]
 imshows = dict(image=highgui.imshow('Image Display', name='image')[:], mask=highgui.imshow('Mask Display', name='mask')[:],
@@ -53,10 +52,15 @@ FILTER_SCRIPT_PIVOTING='''
 <!DOCTYPE FilterScript>
 <FilterScript>
  <filter name="Surface Reconstruction: Ball Pivoting">
-  <Param type="RichAbsPerc" value="0.01" min="0" name="BallRadius" max="0.366624"/>
-  <Param type="RichFloat" value="50" name="Clustering"/>
+  <Param type="RichAbsPerc" value="0.02" min="0" name="BallRadius" max="0.366624"/>
+  <Param type="RichFloat" value="20" name="Clustering"/>
   <Param type="RichFloat" value="90" name="CreaseThr"/>
   <Param type="RichBool" value="false" name="DeleteFaces"/>
+ </filter>
+ <filter name="Laplacian Smooth">
+  <Param type="RichInt" value="3" name="stepSmoothNum"/>
+  <Param type="RichBool" value="true" name="Boundary"/>
+  <Param type="RichBool" value="false" name="Selected"/>
  </filter>
 </FilterScript>
 '''
@@ -66,7 +70,7 @@ def meshlab(filename_in, filename_out):
     import subprocess
     f = NamedTemporaryFile(delete=False)
     script = f.name
-    f.write(FILTER_SCRIPT)
+    f.write(FILTER_SCRIPT_PIVOTING)
     f.close()
     subprocess.check_call((['meshlabserver', '-i', filename_in, '-o', filename_out, '-s', script]))
     os.unlink(script)
@@ -83,7 +87,7 @@ def simple_mesh_session(dbs, session, args):
     depthTo3d = calib.DepthTo3d('Depth ~> 3D')
     erode = imgproc.Erode('Mask Erosion', kernel=3) #-> 7x7
     rescale_depth = RescaledRegisteredDepth('Depth scaling') #this is for SXGA mode scale handling.
-    point_cloud_transform = reconstruction.PointCloudTransform('Object Space Transform')
+    point_cloud_transform = PointCloudTransform('Object Space Transform')
     point_cloud_converter = ecto_image_pipeline.conversion.MatToPointCloudXYZRGB('To Point Cloud')
     pre_voxel = ecto_pcl.VoxelGrid("Pre Voxel Decimation", leaf_size=0.005)
     to_ecto_pcl = ecto_pcl.PointCloudT2PointCloud('converter', format=ecto_pcl.XYZRGB)
@@ -104,7 +108,7 @@ def simple_mesh_session(dbs, session, args):
       pre_voxel['output'] >> point_cloud_transform['cloud']
     )
 
-    accum = reconstruction.PointCloudAccumulator('accumulator')
+    accum = PointCloudAccumulator('accumulator')
     voxel_grid = ecto_pcl.VoxelGrid("voxel_grid", leaf_size=0.005)
     outlier_removal = ecto_pcl.StatisticalOutlierRemoval('Outlier Removal', mean_k=2, stddev=2)
     source, sink = ecto.EntangledPair(value=accum.inputs.at('view'),
@@ -137,13 +141,15 @@ def simple_mesh_session(dbs, session, args):
     #finally write the ply to disk.
     ply_writer.inputs.__test__ = True
     ply_writer.process()
+    dir_path = tempfile.mkdtemp()
+    ply_name = os.path.join(dir_path, 'cloud_%s_%05d.ply' % (str(session.id), 0))
     ply_name = 'cloud_%s_%05d.ply' % (str(session.id), 0)
-    mesh_name = 'cloud_%s.stl' % str(session.id)
+    mesh_name = os.path.join(dir_path, 'cloud_%s.stl' % str(session.id))
     meshlab(ply_name, mesh_name)
     if args.commit:
         upload_mesh(dbs, session, ply_name, mesh_name)
-        os.unlink(ply_name)
-        os.unlink(mesh_name)
+        shutil.rmtree(dir_path)
+
 ###################################################################################################################
 def parse_args():
     parser = argparse.ArgumentParser(description='Computes a surface mesh of an object in the database')
@@ -159,7 +165,7 @@ def parse_args():
 
     sched_group = parser.add_argument_group('Scheduler Options')
     from ecto.opts import scheduler_options
-    scheduler_options(sched_group, default_scheduler='Threadpool')
+    scheduler_options(sched_group)
 
     args = parser.parse_args()
     if args.compute_all == False and args.session_id == '':
@@ -184,3 +190,5 @@ if "__main__" == __name__:
             print "Could not load session with id:", args.session_id
             sys.exit(1)
         simple_mesh_session(dbs, session, args)
+    # do it again to create the view for meshes
+    dbs = dbtools.init_object_databases(couch)

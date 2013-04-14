@@ -1,22 +1,13 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-find_package(ecto_pcl REQUIRED)
 find_package(Eigen REQUIRED)
-find_package(ecto_image_pipeline REQUIRED)
-find_package(object_recognition_core REQUIRED)
 
-find_pcl_package()
-
-include_directories(SYSTEM
-                    ${ecto_pcl_INCLUDE_DIRS}
-                    ${EIGEN_INCLUDE_DIRS}
-                    ${ecto_image_pipeline_INCLUDE_DIRS}
-                    ${object_recognition_core_INCLUDE_DIRS}
-                    ${PCL_INCLUDE_DIRS}
+include_directories(SYSTEM ${catkin_INCLUDE_DIRS}
+                           ${EIGEN_INCLUDE_DIRS}
+                           ${PCL_INCLUDE_DIRS}
 )
 
-#deal with the objcog module
-ectomodule(object_recognition_reconstruction INSTALL
+# deal with the reconstruction module
+ectomodule(object_recognition_reconstruction DESTINATION ./
+                                             INSTALL
   module.cpp
   #surfel_conversion.cpp
   #surfels.cpp
@@ -25,20 +16,37 @@ ectomodule(object_recognition_reconstruction INSTALL
   PointCloudTransform.cpp
   PointCloudAccumulator.cpp
   PointCloudMesh.cpp
+)
+
+link_ecto(object_recognition_reconstruction ${BOOST_LIBRARIES}
+                                            ${catkin_LIBRARIES}
+                                            ${OpenCV_LIBRARIES}
+                                            ${PCL_LIBRARIES}
+)
+
+
+set(USE_ON_ROBOT False)
+if (USE_ON_ROBOT)
+  include_directories(SYSTEM /usr/include/suitesparse)
+
+  #TODO: use strict diagnostics
+  remove_definitions(-Wno-strict-aliasing -Wall -Werror)
+  add_definitions(-fpermissive)
+
+  include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
+
+  add_executable(robot_demo robot_demo/robot_demo.cpp
+                            robot_demo/poseRT.cpp
+                            robot_demo/rosUtils.cpp
+                            robot_demo/modelCaptureInterface.cpp
+                            robot_demo/dataGrabbing.cpp
   )
 
-set_target_properties(object_recognition_reconstruction_ectomodule
-      PROPERTIES
-      COMPILE_FLAGS "-Wno-unknown-pragmas -Wno-unused-but-set-variable"
-      )
-
-if (ROS_GROOVY_FOUND)
-  find_package(catkin REQUIRED roscpp)
+  find_package(Boost REQUIRED signals)
+  target_link_libraries(robot_demo ${Boost_LIBRARIES}
+                                   ${catkin_LIBRARIES}
+                                   ${OpenCV_LIBRARIES}
+                                   ${PCL_LIBRARIES}
+  )
+  set_target_properties(robot_demo PROPERTIES COMPILE_FLAGS "-fopenmp" LINK_FLAGS "-fopenmp")
 endif()
-link_ecto(object_recognition_reconstruction
-          ${object_recognition_core_LIBRARIES}
-          ${PCL_LIBRARIES}
-          ${OpenCV_LIBS}
-          ${OpenCV_LIBRARIES}
-          ${roscpp_LIBRARIES}
-)
