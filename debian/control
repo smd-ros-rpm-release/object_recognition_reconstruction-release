@@ -1,0 +1,12 @@
+Source: ros-groovy-object-recognition-reconstruction
+Section: misc
+Priority: extra
+Maintainer: Vincent Rabaud <vincent.rabaud@gmail.com>
+Build-Depends: debhelper (>= 7.0.0), ros-groovy-catkin, ros-groovy-cmake-modules, ros-groovy-ecto, ros-groovy-ecto-image-pipeline, ros-groovy-ecto-pcl, ros-groovy-object-recognition-core, ros-groovy-opencv-candidate, ros-groovy-sensor-msgs
+Homepage: http://wg-perception.github.io/reconstruction/
+Standards-Version: 3.9.2
+
+Package: ros-groovy-object-recognition-reconstruction
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, meshlab, ros-groovy-ecto, ros-groovy-ecto-image-pipeline, ros-groovy-ecto-pcl, ros-groovy-object-recognition-core, ros-groovy-opencv-candidate
+Description: basic 3d reconstruction of an object from aligned Kinect data
